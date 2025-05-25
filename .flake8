@@ -1,0 +1,15 @@
+[flake8]
+extend-ignore = E203
+max-line-lenght = 120
+exclude =
+    .git,
+    __pycache__,
+    docs/source/conf.py,
+    old,
+    build,
+    dist
+max-complexity = 10
+ignore = 
+    D100 
+    , D103
+    , 
