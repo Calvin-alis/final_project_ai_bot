@@ -1,23 +1,20 @@
-# config - User - git 
-# import os
-# from dotenv import load_dotenv
-# load_dotenv()
-# TELEGRAM_BOT_API_KEY = os.getenv('TELEGRAM_BOT_API_KEY')
-# OPENAI_API_TOKEN = os.getenv('OPENAI_API_TOKEN')
-
 # pip install pydantic-settings
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-BASE_DIR = Path(__file__).parent.parent.parent
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class AppConfig(BaseSettings):
     openai_api_token : str 
-    telegram_bot_api_key: str # MARK: // check key or token
+    telegram_bot_api_key: str 
     
     opeanai_model: str = 'gpt-3.5-turbo'
-    opeanai_model_temperature: float = 1.5 # 0 - 2.0
+    opeanai_model_temperature: float = 0.75 # 0 - 2.0
+    
+    username: str | None = None
+    password: str | None = None
     
     path_to_messages: Path = BASE_DIR / 'resources' / 'messages'
     path_to_images: Path = BASE_DIR / 'resources' / 'images'

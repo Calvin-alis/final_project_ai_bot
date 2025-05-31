@@ -10,4 +10,12 @@ def test_add():
     assert add('a', 'b') == 'ab', 'Something wrong with add'
 
 
-test_add()
+import sqlite3
+
+with sqlite3.connect('storage/chat_sessions.db') as conn:
+    cursor = conn.cursor()
+    
+    cursor.execute('select * from gpt_sessions;')
+    
+    res = cursor.fetchall()
+    print(res)

@@ -1,5 +1,6 @@
 import logging
-from settings import config
+from settings.config import config
+
 from pathlib import Path
 
 def get_logger(name: str = __name__) -> logging.Logger:
