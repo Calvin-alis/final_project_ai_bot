@@ -7,7 +7,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 import html
 
-from src.bot.keyboards import get_main_menu_button, get_talk_keyboard #, get_quiz_options_keyboard, get_quiz_action_keyboard
+from src.bot.keyboards import get_main_menu_button, get_talk_keyboard, get_quiz_action_keyboard
 from src.bot.message_sender import send_html_message, send_image_bytes, show_menu
 from src.bot.resource_loader import load_message, load_image, load_menu, load_prompt
 from src.bot.states import TalkStates, QuizStates
@@ -172,11 +172,6 @@ async def talk(
     user_id = message.from_user.id
     user_message = message.text.strip().lower()
 
-    if user_message in ["завершити розмову", "вихід", "стоп", "завершити", "вийти", "закінчити"]:
-        await state.clear()
-        # await send_html_message(message, await load_message("talk_stop"))
-        return
-
     data = await state.get_data()
     system_prompt = data.get("system_prompt")
     figure = data.get("figure")
@@ -196,58 +191,15 @@ async def talk(
     )
 
 
-# @router.message(Command("quiz"))
-# async def start_quiz(message: Message, state: FSMContext):
-#     await state.clear()
-#     text = await load_message("quiz")
-#     image_bytes = await load_image("quiz")
-#     await send_image_bytes(message=message, image_bytes=image_bytes)
-#     await send_html_message(message=message, text=text)
-#     await message.answer("Оберіть тему:", reply_markup=get_quiz_options_keyboard())
-#     await state.set_state(QuizStates.selecting_topic)
+@router.callback_query(F.data == "talk_end")
+async def end_talk(callback: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await callback.message.edit_reply_markup() 
+    await callback.message.answer(await load_message("talk_stop"))
+    await callback.answer()
 
 
-# @router.message(QuizStates.selecting_topic)
-# async def set_quiz_topic(message: Message, state: FSMContext):
-#     topic = message.text.strip().lower()
-#     await state.update_data(topic=topic, score=0, total=0)
-#     await ask_quiz_question(message, state)
+@router.callback_query(F.data == "talk_continue")
+async def talk_continue(callback: CallbackQuery):
+    await callback.answer("Напишіть наступне повідомлення для продовження розмови.")
 
-
-# async def ask_quiz_question(message: Message, state: FSMContext):
-#     data = await state.get_data()
-#     topic = data.get("topic")
-#     prompt_name = "quiz_more" if topic == "quiz_more" else topic
-#     prompt = await load_prompt("quiz")
-#     user_prompt = topic if topic != "quiz_more" else "quiz_more"
-#     gpt_input = user_prompt
-
-#     openai_client = message.bot.get("openai_client")
-#     question = await openai_client.take_task(user_message=gpt_input, system_prompt=prompt)
-#     await state.update_data(last_question=question)
-#     await message.answer(question)
-#     await state.set_state(QuizStates.answering_question)
-
-
-# @router.message(QuizStates.answering_question)
-# async def answer_quiz_question(message: Message, state: FSMContext):
-#     user_answer = message.text.strip().lower()
-#     data = await state.get_data()
-#     question = data.get("last_question")
-#     topic = data.get("topic")
-#     prompt = await load_prompt("quiz")
-
-#     openai_client = message.bot.get("openai_client")
-#     check_input = f"Питання: {question}\nВідповідь: {user_answer}"
-#     reply = await openai_client.take_task(user_message=check_input, system_prompt=prompt)
-
-#     score = data.get("score", 0)
-#     total = data.get("total", 0)
-#     if "правильно" in reply.lower():
-#         score += 1
-
-#     total += 1
-#     await state.update_data(score=score, total=total)
-
-#     await message.answer(f"{reply}\n\nРахунок: {score}/{total}", reply_markup=get_quiz_action_keyboard())
-#     await state.set_state(QuizStates.quiz_continue)
